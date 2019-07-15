@@ -1,0 +1,30 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0+"
+  codebase="file:/Users/pugh/findbugs/jnlp"
+  >
+ <information>
+    <title>FindBugs</title>
+    <vendor>https://github.com/spotbugs</vendor>
+    <homepage href="https://github.com/spotbugs"/>
+    <description>SpotBugs: Static Bug Finder</description>
+    <description kind="short">Static analysis tool for defect detection</description>
+    <icon href="buggy-sm.png"/>
+    <offline-allowed/>
+  </information>
+  <security>
+      <all-permissions/>
+  </security>
+
+  <resources>
+    <jar href="findbugs.jar"/>
+    <extension href="core.jnlp" name="SpotBugs"/>
+    <extension href="appengine.jnlp" name="AppEngine cloud for SpotBugs"/>
+
+    <property name="findbugs.loadBugsFromURL" value="http://findbugs.cs.umd.edu/cloud/XXX/index.xml.gz"/>
+  </resources>
+
+  <application-desc main-class="edu.umd.cs.findbugs.gui2.Driver"/>
+
+</jnlp>
+

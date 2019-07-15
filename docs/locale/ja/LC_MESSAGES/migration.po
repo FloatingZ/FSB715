@@ -1,0 +1,110 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2016-2017, spotbugs community
+# This file is distributed under the same license as the spotbugs package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+msgid ""
+msgstr "Project-Id-Version: spotbugs 3.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-10-28 08:46+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.5.1\n"
+
+#: ../../migration.rst:2
+msgid "Guide for migration from FindBugs 3.0 to SpotBugs 3.1"
+msgstr "FindBugs 3.0 から SpotBugs 3.1 への移行ガイド"
+
+#: ../../migration.rst:5
+msgid "com.google.code.findbugs:findbugs"
+msgstr ""
+
+#: ../../migration.rst:7
+msgid ""
+"Simply replace ``com.google.code.findbugs:findbugs`` with "
+"``com.github.spotbugs:spotbugs``."
+msgstr "``com.google.code.findbugs:findbugs`` を ``com.github.spotbugs:spotbugs`` に替えてください。"
+
+#: ../../migration.rst:16
+msgid "com.google.code.findbugs:jsr305"
+msgstr ""
+
+#: ../../migration.rst:18
+msgid ""
+"JSR305 is already Dormant status, so SpotBugs does not release ``jsr305``"
+" jar file. Please continue using findbugs' one."
+msgstr "JSR305 は，すでに休止状態なので，SpotBugs は ``jsr305`` jarファイルをリリースしません。FindBugs のものを使い続けてください。"
+
+#: ../../migration.rst:22
+msgid "com.google.code.findbugs:findbugs-annotations"
+msgstr ""
+
+#: ../../migration.rst:24
+msgid "Please depend on ``spotbugs-annotations`` instead."
+msgstr "代わりに ``spotbugs-annotations`` に依存してください。"
+
+#: ../../migration.rst:33
+msgid "com.google.code.findbugs:annotations"
+msgstr ""
+
+#: ../../migration.rst:35
+msgid ""
+"Please depend on both of ``spotbugs-annotations`` and ``net.jcip:jcip-"
+"annotations:1.0`` instead."
+msgstr "代わりに ``spotbugs-annotations`` と ``net.jcip:jcip-annotations:1.0`` の両方に依存してください。"
+
+#: ../../migration.rst:44
+msgid "FindBugs Ant task"
+msgstr "FindBugs Ant タスク"
+
+#: ../../migration.rst:46
+msgid "Please replace ``findbugs-ant.jar`` with ``spotbugs-ant.jar``."
+msgstr "``findbugs-ant.jar`` を ``spotbugs-ant.jar`` に替えてください。"
+
+#: ../../migration.rst:66
+msgid "FindBugs Maven plugin"
+msgstr "FindBugs Maven プラグイン"
+
+#: ../../migration.rst:68
+msgid ""
+"Please use `com.github.spotbugs:spotbugs-maven-plugin` instead of "
+"`org.codehaus.mojo:findbugs-maven-plugin`."
+msgstr "`org.codehaus.mojo:findbugs-maven-plugin` の代わりに `com.github.spotbugs:spotbugs-maven-plugin` を使用してください。"
+
+#: ../../migration.rst:74
+msgid "FindBugs Gradle plugin"
+msgstr "FindBugs Gradle プラグイン"
+
+#: ../../migration.rst:76
+msgid ""
+"Please use spotbugs plugin found on "
+"https://plugins.gradle.org/plugin/com.github.spotbugs"
+msgstr "https://plugins.gradle.org/plugin/com.github.spotbugs にある spotbugs プラグインを使用してください。"
+
+#: ../../migration.rst:82
+msgid "FindBugs Eclipse plugin"
+msgstr "FindBugs Eclipse プラグイン"
+
+#: ../../migration.rst:84
+msgid "Please use following update site instead."
+msgstr "代わりに次の更新サイトをご利用ください。"
+
+#: ../../migration.rst:86
+msgid "https://spotbugs.github.io/eclipse/ (to use stable version)"
+msgstr "https://spotbugs.github.io/eclipse/ (安定バージョンを使用する)"
+
+#: ../../migration.rst:87
+msgid "https://spotbugs.github.io/eclipse-candidate/ (to use candidate version)"
+msgstr "https://spotbugs.github.io/eclipse-candidate/ (候補バージョンを使用する)"
+
+#: ../../migration.rst:88
+msgid "https://spotbugs.github.io/eclipse-latest/ (to use latest build)"
+msgstr "https://spotbugs.github.io/eclipse-latest/ (最新のビルドを使用する)"
+
+#~ msgid "xml"
+#~ msgstr ""
+

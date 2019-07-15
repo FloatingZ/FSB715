@@ -1,0 +1,322 @@
+// plugins {
+//   id "com.github.spotbugs" version "1.6.5"
+// }
+
+apply from: "$rootDir/gradle/jacoco.gradle"
+apply from: "$rootDir/gradle/maven.gradle"
+apply from: "$rootDir/gradle/checkstyle.gradle"
+apply from: "$rootDir/gradle/javadoc.gradle"
+
+configurations {
+  // used only in distribution. It is not listed in pom.xml, so users like maven plugin don't use this dependency.
+  logBinding
+}
+
+sourceSets {
+  main {
+    java {
+      srcDirs = ['src/main/java', 'src/gui']
+      exclude '**/*.properties'
+      exclude '**/*.db'
+      exclude '**/*.html'
+      exclude '**/*.png'
+    }
+    resources {
+      /*
+       * Because why put everything in a single folder when you can split it
+       * and mix it with other files you don't actually need together
+      */
+      srcDirs = ['src/xsl', 'etc', 'src/main/java', 'src/gui']
+      include '*.xsd'
+      include 'bugrank.txt'
+      include 'findbugs.xml'
+      include 'messages*.xml'
+      include '**/*.properties'
+      exclude 'doc.properties'
+      exclude 'script.properties'
+      include '*.xsl'
+      include '**/*.db'
+      include '**/*.html'
+      include '**/*.png'
+    }
+  }
+}
+
+dependencies {
+  compile 'org.ow2.asm:asm:7.0'
+  compile 'org.ow2.asm:asm-analysis:7.0'
+  compile 'org.ow2.asm:asm-commons:7.0'
+  compile 'org.ow2.asm:asm-tree:7.0'
+  compile 'org.ow2.asm:asm-util:7.0'
+  compile 'org.apache.bcel:bcel:6.2'
+  compile 'net.jcip:jcip-annotations:1.0'
+  compile 'org.dom4j:dom4j:2.1.0'
+  compile 'jaxen:jaxen:1.1.6' // only transitive through dom4j:dom4j:1.6.1, which has an *optional* dependency on jaxen:jaxen.
+  compile 'commons-lang:commons-lang:2.6'
+  compile 'org.slf4j:slf4j-api:1.8.0-beta2'
+  logBinding 'org.apache.logging.log4j:log4j-slf4j18-impl:2.11.1'
+
+  // These annotations are repackaged to spotbugs.jar, to keep backward compatibility for Ant task.
+  // If they're not repackaged, Ant task will report 'java.lang.ClassNotFoundException: edu.umd.cs.findbugs.annotations.CleanupObligation'
+  compile project(':spotbugs-annotations')
+
+  compileOnly 'com.apple:AppleJavaExtensions:1.4'
+
+  testCompile 'junit:junit:4.12'
+  testCompile 'jdepend:jdepend:2.9.1'
+  testCompile 'org.apache.ant:ant:1.9.4'
+  testCompile 'org.apache.logging.log4j:log4j-slf4j18-impl:2.11.1'
+
+  // TODO : Some of these can be extracted to actual dependencies
+  compile fileTree(dir: 'lib', include: '*.jar')
+}
+
+// spotbugs {
+//   effort = "max"
+//   reportLevel = "high"
+// }
+
+clean {
+  delete ".libs"
+}
+
+tasks.withType(Jar).all {
+  includeEmptyDirs = false
+  // FIXME: this is ugly, but is what ant is currently doing... our own jars are included as dependencies :S
+  //destinationDir = file("$projectDir/lib")
+}
+
+
+eclipse.classpath.file {
+    whenMerged {
+      classpath ->
+         classpath.entries.removeAll { entry -> entry.kind == 'lib' && entry.path.contains('xml-apis')}
+         classpath.entries.forEach {
+             entry ->
+               if(entry.kind == 'lib' && !entry.path.contains('spotbugs-annotations')) {
+                   entry.path = ".libs/" + java.nio.file.Paths.get(entry.path).getFileName().toString()
+                   entry.exported = true
+               }
+      }
+    }
+}
+
+task copyLibsForEclipse (type: Copy) {
+    from configurations.compile.files
+    into ".libs"
+    include "*.jar"
+    exclude "*xml-apis*.jar"
+    exclude "*spotbugs-annotations*.jar"
+
+    from configurations.logBinding.files
+    into ".libs"
+    include "*.jar"
+
+    from configurations.testCompile.files
+    into ".libs"
+    include "*.jar"
+
+    from configurations.compileOnly.files
+    into ".libs"
+    include "*.jar"
+}
+
+task updateManifest {
+  dependsOn configurations.compile, copyLibsForEclipse
+  doLast {
+    def manifestSpec = manifest {
+      from "$projectDir/META-INF/MANIFEST-TEMPLATE.MF"
+      attributes 'Main-Class': 'edu.umd.cs.findbugs.LaunchAppropriateUI',
+               'Bundle-Version': project.version.replace('-', '.'),
+               'Bundle-ClassPath': 'spotbugs.jar,' +  fileTree(dir: '.libs').collect { projectDir.toPath().relativize(it.toPath()).toString() }.join(',')
+    }
+    // write manifests
+    manifestSpec.writeTo("$projectDir/META-INF/MANIFEST.MF")
+  }
+}
+tasks.eclipse.dependsOn(updateManifest)
+
+// Manually define what goes into the default jar, since it's not only main sourceset
+jar {
+  // To keep backward compatibility, delete version number from jar name
+  archiveName "${baseName}.${extension}"
+
+  from sourceSets.main.output
+  def jarInClasspath = project.configurations.runtime.collect{it.getName()}
+  jarInClasspath += project.configurations.logBinding.collect{it.getName()}
+  manifest {
+    attributes 'Main-Class': 'edu.umd.cs.findbugs.LaunchAppropriateUI',
+               'Bundle-Version': project.version,
+               'Class-Path': jarInClasspath.join(' ') + ' config/'
+  }
+}
+
+// Populate bin folder with scripts
+task scripts(type:Copy) {
+  // Take the properties into account for up-to-date checking
+  inputs.file "$projectDir/etc/script.properties"
+
+  def props = new Properties()
+  doFirst {
+    props.load(new FileInputStream("$projectDir/etc/script.properties"))
+
+    filesNotMatching('**/*.ico') {
+      filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+        'GET_FBHOME': props.getProperty('script.get.fbhome'),
+        'SET_DEFAULT_JAVA': props.getProperty('script.set.default.java'),
+        'WRAP_JAVA': props.getProperty('script.wrap.java'),
+        'WRAP_JAR': props.getProperty('script.wrap.jar'),
+        'DEFINE_ESCAPE_ARG': props.getProperty('script.define.escape_arg')])
+      fileMode 0755
+    }
+  }
+
+  from 'src/scripts/standard'
+  from 'src/scripts/windows'
+  from('src/scripts/deprecated') {
+    into 'deprecated'
+  }
+  from('src/scripts/experimental') {
+    into 'experimental'
+  }
+
+  destinationDir file("$buildDir/bin")
+  duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
+// This disables hundreds of javadoc warnings on missing tags etc, see #340
+javadoc {
+  doFirst {
+    // This is supposed to enable everything except "missing" but doesn't work with gradle
+    // See http://docs.oracle.com/javase/8/docs/technotes/tools/unix/javadoc.html
+    options.addBooleanOption('Xdoclint:all,-missing', true)
+
+    // TODO remove command and warning below if the doclint can be properly configured
+    options.addStringOption('Xmaxwarns', '3')
+  }
+  doLast {
+    logger.warn('Javadoc: too many warnings, only first 3 are shown, see #340!')
+  }
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier 'javadoc'
+  from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives javadocJar
+  archives sourcesJar
+}
+
+apply plugin: 'distribution'
+distributions {
+  main {
+    contents {
+      from(scripts) {
+        into 'bin'
+      }
+      from 'README.txt'
+      from ('plugin') {
+         into 'plugin'
+         include 'README'
+      }
+      from 'licenses'
+      from([configurations.compile, configurations.logBinding]) {
+        into 'lib'
+        include '**/*.jar'
+      }
+      from([jar, project(':spotbugs-ant').jar]) {
+        into 'lib'
+      }
+      from ('log4j2.xml') {
+        into 'lib/config'
+      }
+      from('src/xsl') {
+        into 'src/xsl'
+        include '**/*.xsl'
+      }
+    }
+  }
+}
+
+distTar.compression = Compression.GZIP
+tasks['assemble'].dependsOn tasks['assembleDist']
+
+task distSrcZip(type:Exec) {
+  commandLine 'git', 'archive', '-o', "${buildDir}/distributions/spotbugs-${project.version}-source.zip",
+    '--prefix', "spotbugs-${project.version}/", 'HEAD'
+}
+distSrcZip.onlyIf {
+  file("$rootDir/.git").isDirectory()
+}
+tasks['assembleDist'].finalizedBy distSrcZip
+
+test {
+  dependsOn ':spotbugsTestCases:build'
+  maxHeapSize = '1G'
+}
+
+task unzipDist(type:Copy, dependsOn:distZip) {
+  from zipTree(distZip.outputs.files.singleFile)
+  into file("$buildDir/smoketest/")
+  // Remove prefix
+  eachFile { details ->
+    details.path = details.path - "spotbugs-${project.version}"
+  }
+}
+
+// TODO : actually check the output beyond it not blowing up in pieces?
+task smokeTest {
+  dependsOn unzipDist, project(':spotbugs-ant').jar
+  doLast {
+    ant.taskdef(name:'spotbugs', classname:'edu.umd.cs.findbugs.anttask.FindBugsTask', classpath:project(':spotbugs-ant').jar.outputs.files.asPath)
+    ant.spotbugs(home:"$buildDir/smoketest/", output:'xml:withMessages',
+              jvmargs:'-ea -Xmx1200m',
+              excludeFilter:'findbugsExclude.xml',
+              projectName:'spotbugs',
+              maxRank:'20',
+              timeout:'1800000',
+              outputFile:"${buildDir}/smoketest/findbugscheckAll.xml") {
+      sourcePath(path:'src/main/java:src/gui:src/tools')
+      'class'(location:project.tasks['compileJava'].destinationDir)
+      configurations.compile.each { File file -> auxClasspath(path:file.path) }
+    }
+  }
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      pom.project {
+        name 'SpotBugs'
+        description "SpotBugs: Because it's easy!"
+      }
+    }
+  }
+}
+
+// Module name should be reverse-DNS (com.github.spotbugs) just like package name
+// http://blog.joda.org/2017/04/java-se-9-jpms-module-naming.html
+ext.moduleName = 'com.github.spotbugs.spotbugs'
+apply from: "$rootDir/gradle/jigsaw.gradle"
+
+// TODO : generatemanual (we should decide what to do with the manual)
+// TODO : generatepdfmanual
+// TODO : bugdesc
+
+// Smoke testing
+// TODO : plugincheck_fbcontrib
+// TODO : spotbugsTestCases (already analyzed by unit tests... not particularly useful, is it?)
+
+// Integration testing
+// TODO : validatesamplehtmloutput (really?)
+// TODO : validatesamplexmloutput
+
+// XML validation
+// TODO : validate

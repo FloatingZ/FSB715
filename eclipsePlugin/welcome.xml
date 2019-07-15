@@ -1,0 +1,6 @@
+<welcomePage
+        title="SpotBugs"
+        format="wrap">
+        <intro>This plugin provides access to the <a href="https://spotbugs.github.io/">SpotBugs</a>, a static analyzer that looks
+        for Java coding defects.</intro>
+</welcomePage>

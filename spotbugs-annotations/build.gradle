@@ -1,0 +1,89 @@
+// plugins {
+//   id "com.github.spotbugs" version "1.6.5"
+// }
+
+apply from: "$rootDir/gradle/checkstyle.gradle"
+apply from: "$rootDir/gradle/javadoc.gradle"
+apply from: "$rootDir/gradle/maven.gradle"
+
+dependencies {
+  compile 'com.google.code.findbugs:jsr305:3.0.2'
+}
+
+def manifestSpec = manifest {
+  attributes 'Bundle-Name': 'spotbugs-annotations',
+               'Bundle-SymbolicName': 'spotbugs-annotations',
+               'Bundle-Version': project.version.replace('-', '.'),
+               'Export-Package': 'edu.umd.cs.findbugs.annotations',
+               'Bundle-RequiredExecutionEnvironment': 'J2SE-1.5',
+               'Bundle-ManifestVersion': '2'
+}
+
+task updateManifest {
+    // write manifests
+    manifestSpec.writeTo("$projectDir/META-INF/MANIFEST.MF")
+}
+tasks.eclipse.dependsOn(updateManifest)
+
+jar {
+  // To keep backward compatibility, delete version number from jar name
+  archiveName "${baseName}.${extension}"
+  manifest {
+    attributes 'Bundle-Name': 'spotbugs-annotations',
+               'Bundle-SymbolicName': 'spotbugs-annotations',
+               'Bundle-Version': project.version.replace('-', '.'),
+               'Export-Package': 'edu.umd.cs.findbugs.annotations',
+               'Bundle-RequiredExecutionEnvironment': 'J2SE-1.5',
+               'Bundle-ManifestVersion': '2'
+  }
+}
+
+javadoc {
+  options.with {
+    memberLevel = JavadocMemberLevel.PUBLIC
+    docTitle = 'SpotBugs Annotation Documentation'
+  }
+  doFirst {
+    // This is supposed to enable everything except "missing" but doesn't work with gradle
+    // See http://docs.oracle.com/javase/8/docs/technotes/tools/unix/javadoc.html
+    options.addBooleanOption('Xdoclint:all,-missing', true)
+  }
+  doLast {
+    logger.warn('Javadoc: "missing" warnings are disabled, see #340!')
+  }
+}
+
+task javadocJar(type: Jar) {
+  classifier = 'javadoc'
+  from javadoc
+}
+
+task sourcesJar(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives jar, javadocJar, sourcesJar
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      pom.project {
+        name 'SpotBugs Annotations'
+        description 'Annotations the SpotBugs tool supports'
+      }
+    }
+  }
+}
+
+// Module name should be reverse-DNS (com.github.spotbugs) just like package name
+// http://blog.joda.org/2017/04/java-se-9-jpms-module-naming.html
+ext.moduleName = 'com.github.spotbugs.annotations'
+apply from: "$rootDir/gradle/jigsaw.gradle"
+
+// spotbugs {
+//   effort = "max"
+//   reportLevel = "high"
+// }

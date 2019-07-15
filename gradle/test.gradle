@@ -1,0 +1,14 @@
+tasks.withType(Test) {
+    testLogging {
+        events 'FAILED'
+        exceptionFormat 'full'
+    }
+    doFirst {
+      // http://openjdk.java.net/jeps/223
+      if (System.getProperty("java.specification.version") == "9" || System.getProperty("java.specification.version") == "10") {
+        jvmArgs = [
+          '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
+        ]
+      }
+    }
+}
