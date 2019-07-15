@@ -107,6 +107,11 @@ public abstract class AbstractFrameModelingVisitor<Value, FrameType extends Fram
     public void setFrameAndLocation(FrameType frame, Location location) {
         this.frame = frame;
         this.location = location;
+        setParament();
+    }
+
+    public void setParament(){
+
     }
 
     /**

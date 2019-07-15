@@ -34,7 +34,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import javax.annotation.WillCloseWhenClosed;
 
@@ -46,12 +46,7 @@ public class UTF8 {
     /**
      *
      */
-    private static final String UTF_8 = "UTF-8";
-    public static final Charset charset;
-
-    static {
-        charset = Charset.forName(UTF_8);
-    }
+    private static final String UTF_8 = StandardCharsets.UTF_8.name();
 
     public static PrintStream printStream(OutputStream out) {
         return printStream(out, false);
@@ -64,10 +59,10 @@ public class UTF8 {
         }
     }
     public static Writer writer(OutputStream out) {
-        return new OutputStreamWriter(out, charset);
+        return new OutputStreamWriter(out, StandardCharsets.UTF_8);
     }
     public static Writer fileWriter(File fileName) throws IOException {
-        return new OutputStreamWriter(new FileOutputStream(fileName), charset);
+        return new OutputStreamWriter(new FileOutputStream(fileName), StandardCharsets.UTF_8);
     }
     public static BufferedWriter bufferedWriter(File fileName) throws IOException {
         return new BufferedWriter(fileWriter(fileName));
@@ -79,22 +74,14 @@ public class UTF8 {
 
 
     public static PrintWriter printWriter(PrintStream printStream)  {
-        try {
-            return new PrintWriter(new OutputStreamWriter(printStream, UTF_8));
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError("UTF-8 not supported");
-        }
+        return new PrintWriter(new OutputStreamWriter(printStream, StandardCharsets.UTF_8));
     }
     public static PrintWriter printWriter(PrintStream printStream, boolean autoflush)  {
-        try {
-            return new PrintWriter(new OutputStreamWriter(printStream, UTF_8), autoflush);
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError("UTF-8 not supported");
-        }
+        return new PrintWriter(new OutputStreamWriter(printStream, StandardCharsets.UTF_8), autoflush);
     }
 
     public static Writer fileWriter(String fileName) throws IOException {
-        return new OutputStreamWriter(new FileOutputStream(fileName), charset);
+        return new OutputStreamWriter(new FileOutputStream(fileName), StandardCharsets.UTF_8);
     }
     public static BufferedWriter bufferedWriter(String fileName) throws IOException {
         return new BufferedWriter(fileWriter(fileName));
@@ -112,7 +99,7 @@ public class UTF8 {
     }
 
     public static Reader reader(@WillCloseWhenClosed InputStream in) {
-        return new InputStreamReader(in, charset);
+        return new InputStreamReader(in, StandardCharsets.UTF_8);
     }
 
     public static BufferedReader bufferedReader(@WillCloseWhenClosed InputStream in) {
@@ -120,6 +107,6 @@ public class UTF8 {
     }
 
     public static byte[] getBytes(String s) {
-        return charset.encode(s).array();
+        return StandardCharsets.UTF_8.encode(s).array();
     }
 }

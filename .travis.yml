@@ -1,13 +1,12 @@
 language: java
-sudo: false
 dist: trusty
 
 jdk:
-  - oraclejdk8
-  - oraclejdk11
+  - openjdk8
+  - openjdk11
 matrix:
   allow_failures:
-  - jdk: oraclejdk11
+  - jdk: openjdk11
 env:
   global:
     - SONAR_HOST_URL="https://sonarcloud.io"
@@ -33,13 +32,13 @@ env:
 addons:
   apt:
     packages:
-      - oracle-java8-installer
-      - oracle-java8-set-default
+      - openjdk-8-jdk-headless
 
 before_install:
   - mkdir -p deps
   # In forked repository, encrypted environment variable is undefined. We need to skip this decryption.
-  - if [ -n "$encrypted_05a1b17af1e9_key" ]; then openssl aes-256-cbc -K $encrypted_05a1b17af1e9_key -iv $encrypted_05a1b17af1e9_iv -in secring.gpg.enc -out secring.gpg -d; fi
+  - if [ -n "$encrypted_05a1b17af1e9_key" ]; then openssl aes-256-cbc -K $encrypted_05a1b17af1e9_key -iv $encrypted_05a1b17af1e9_iv -in .travis/secring.gpg.enc -out secring.gpg -d; fi
+  - if [ -n "$encrypted_00ea871ed050_key" ]; then openssl aes-256-cbc -K $encrypted_00ea871ed050_key -iv $encrypted_00ea871ed050_iv -in .travis/spotbugs.jks.enc -out spotbugs.jks -d; fi
 
 install:
   - if [[ ! -e deps/eclipse-SDK-4.6.3-linux-gtk-x86_64.tar.gz ]]; then wget 'https://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/R-4.6.3-201703010400/eclipse-SDK-4.6.3-linux-gtk-x86_64.tar.gz&r=1' -O deps/eclipse-SDK-4.6.3-linux-gtk-x86_64.tar.gz; fi
@@ -50,16 +49,17 @@ install:
   - echo "ossrhPassword=${SONATYPE_PASSWORD}" >> gradle.properties
   - echo "signing.keyId=${SIGNING_KEY_ID}" >> gradle.properties
   - echo "signing.password=${SIGNING_PASSWORD}" >> gradle.properties
-  - echo signing.secretKeyRingFile=secring.gpg >> gradle.properties
+  - echo signing.secretKeyRingFile=${TRAVIS_BUILD_DIR}/secring.gpg >> gradle.properties
+  - echo "keystorepass=${KEYSTORE_PASS}" >> gradle.properties
 
 script:
-  - jdk_switcher use oraclejdk8
+  - jdk_switcher use openjdk8
   - ./gradlew classes testClasses -S
-  - if [[ $TRAVIS_JDK_VERSION == "oraclejdk11" ]]; then export JAVA_HOME=$HOME/oraclejdk11; fi
+  - if [[ $TRAVIS_JDK_VERSION == "openjdk11" ]]; then export JAVA_HOME=$HOME/openjdk11; fi
   - ./gradlew -v --no-daemon
   - ./gradlew build smoketest -x signArchives -S --no-daemon
-  - jdk_switcher use oraclejdk8
-  - if [[ $TRAVIS_JDK_VERSION == "oraclejdk8" ]]; then ./gradlew sonarqube -S; fi
+  - jdk_switcher use openjdk8
+  - if [[ $TRAVIS_JDK_VERSION == "openjdk8" ]]; then ./gradlew sonarqube -S; fi
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -80,16 +80,7 @@ deploy:
     email: skypencil+spotbugs-bot@gmail.com
     on:
       branch: master
-      jdk: oraclejdk8
-  - provider: pages
-    skip_cleanup: true
-    github_token: $GITHUB_TOKEN
-    local_dir: eclipsePlugin/build/site/eclipse-stable-latest
-    repo: spotbugs/eclipse-stable-latest
-    email: skypencil+spotbugs-bot@gmail.com
-    on:
-      branch: release-3.1
-      jdk: oraclejdk8
+      jdk: openjdk8
   - provider: pages
     skip_cleanup: true
     github_token: $GITHUB_TOKEN
@@ -98,7 +89,7 @@ deploy:
     email: skypencil+spotbugs-bot@gmail.com
     on:
       tags: true
-      jdk: oraclejdk8
+      jdk: openjdk8
   - provider: pages
     skip_cleanup: true
     github_token: $GITHUB_TOKEN
@@ -107,22 +98,22 @@ deploy:
     email: skypencil+spotbugs-bot@gmail.com
     on:
       tags: true
-      jdk: oraclejdk8
-      condition: "$TRAVIS_TAG != *'_RC'*"
+      jdk: openjdk8
+      condition: "$TRAVIS_TAG != *'_RC'* && $TRAVIS_TAG != *'_beta'*"
   - provider: releases
     api_key: $GITHUB_TOKEN
     file: "eclipsePlugin/build/distributions/eclipsePlugin.zip"
     skip_cleanup: true
     on:
       tags: true
-      jdk: oraclejdk8
+      jdk: openjdk8
   - provider: script
     skip_cleanup: true
     # wait until uploading task finishes, because it may cost more than 10 minutes without any output
     # https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
     script: .travis/travis_wait "./gradlew uploadArchives"
     on:
-      jdk: oraclejdk8
+      jdk: openjdk8
       branch: master
   - provider: script
     skip_cleanup: true
@@ -130,13 +121,5 @@ deploy:
     # https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
     script: .travis/travis_wait "./gradlew uploadArchives"
     on:
-      jdk: oraclejdk8
-      branch: release-3.1
-  - provider: script
-    skip_cleanup: true
-    # wait until uploading task finishes, because it may cost more than 10 minutes without any output
-    # https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
-    script: .travis/travis_wait "./gradlew uploadArchives"
-    on:
       tags: true
-      jdk: oraclejdk8
+      jdk: openjdk8

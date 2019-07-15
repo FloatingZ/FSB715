@@ -185,12 +185,7 @@ public class Update {
         matchBugs(baselineCollection, bugCollection);
         matchBugs(SortedBugCollection.BugInstanceComparator.instance, baselineCollection, bugCollection);
         matchBugs(versionInsensitiveBugComparator, baselineCollection, bugCollection);
-        for (Iterator<BugInstance> i = bugCollection.getCollection().iterator(); i.hasNext();) {
-            BugInstance bug = i.next();
-            if (matchedOldBugs.containsKey(bug)) {
-                i.remove();
-            }
-        }
+        bugCollection.getCollection().removeIf(matchedOldBugs::containsKey);
 
     }
 
@@ -603,11 +598,7 @@ public class Update {
             if (!matchedOldBugs.containsKey(bug)) {
                 if (matchOld.match(bug)) {
                     //                    oldBugs++;
-                    LinkedList<BugInstance> q = set.get(bug);
-                    if (q == null) {
-                        q = new LinkedList<>();
-                        set.put(bug, q);
-                    }
+                    LinkedList<BugInstance> q = set.computeIfAbsent(bug, k -> new LinkedList<>());
                     q.add(bug);
                 }
 

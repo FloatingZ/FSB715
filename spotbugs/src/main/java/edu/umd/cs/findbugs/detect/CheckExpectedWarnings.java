@@ -129,17 +129,13 @@ public class CheckExpectedWarnings implements Detector2, NonReportingDetector {
             warningsByClass = new HashMap<>();
             warningsByMethod = new HashMap<>();
             warningsByField = new HashMap<>();
-
-            for (Iterator<BugInstance> i = bugCollection.iterator(); i.hasNext();) {
-                BugInstance warning = i.next();
+    
+            for (BugInstance warning : bugCollection) {
                 MethodAnnotation method = warning.getPrimaryMethod();
                 if (method != null) {
                     MethodDescriptor methodDesc = method.toMethodDescriptor();
-                    Collection<BugInstance> warnings = warningsByMethod.get(methodDesc);
-                    if (warnings == null) {
-                        warnings = new LinkedList<>();
-                        warningsByMethod.put(methodDesc, warnings);
-                    }
+                    Collection<BugInstance> warnings = warningsByMethod.computeIfAbsent(methodDesc,
+                        k -> new LinkedList<>());
                     warnings.add(warning);
                 }
                 FieldAnnotation field = warning.getPrimaryField();
@@ -148,32 +144,25 @@ public class CheckExpectedWarnings implements Detector2, NonReportingDetector {
                         System.out.println("primary field of " + field + " for " + warning);
                     }
                     FieldDescriptor fieldDescriptor = field.toFieldDescriptor();
-                    Collection<BugInstance> warnings = warningsByField.get(fieldDescriptor);
-
-                    if (warnings == null) {
-                        warnings = new LinkedList<>();
-                        warningsByField.put(fieldDescriptor, warnings);
-                    }
+                    Collection<BugInstance> warnings = warningsByField.computeIfAbsent(fieldDescriptor,
+                        k -> new LinkedList<>());
                     warnings.add(warning);
                 }
-
+        
                 ClassAnnotation clazz = warning.getPrimaryClass();
                 if (clazz != null) {
                     ClassDescriptor classDesc = clazz.getClassDescriptor();
-                    if(field != null && classDesc.equals(field.getClassDescriptor())) {
+                    if (field != null && classDesc.equals(field.getClassDescriptor())) {
                         continue;
                     }
                     if (method != null && classDesc.equals(method.getClassDescriptor())) {
                         continue;
                     }
-                    Collection<BugInstance> warnings = warningsByClass.get(classDesc);
-                    if (warnings == null) {
-                        warnings = new LinkedList<>();
-                        warningsByClass.put(classDesc, warnings);
-                    }
+                    Collection<BugInstance> warnings = warningsByClass.computeIfAbsent(classDesc,
+                        k -> new LinkedList<>());
                     warnings.add(warning);
                 }
-
+        
             }
 
         }

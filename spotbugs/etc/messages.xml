@@ -729,6 +729,9 @@ but nothing is done to handle the exception.  </p>
 ]]>
     </Details>
   </Detector>
+  <Detector class="com.h3xstream.findsecbugs.csrf.SpringCsrfUnrestrictedRequestMappingDetector">
+    <Details>Detect Spring CSRF unrestricted RequestMapping</Details>
+  </Detector>
   <Detector class="edu.umd.cs.findbugs.detect.DumbMethodInvocations">
     <Details>
 <![CDATA[
@@ -1058,6 +1061,10 @@ where comparing reference values is generally an error.  It is a slow detector.<
 ]]>
     </Details>
   </Detector>
+  <Detector class="com.h3xstream.findsecbugs.xss.XSSRequestWrapperDetector">
+    <Details>Identify XSSRequestWrapper (weak XSS protection)</Details>
+  </Detector>
+
   <Detector class="edu.umd.cs.findbugs.detect.FindMismatchedWaitOrNotify">
     <Details>
 <![CDATA[
@@ -1386,6 +1393,10 @@ an ObjectOutput.
 ]]>
     </Details>
   </Detector>
+  <Detector class="com.h3xstream.findsecbugs.injection.command.CommandInjectionDetector">
+    <Details>Identify sources of command injection</Details>
+  </Detector>
+
 
 
 
@@ -1415,6 +1426,9 @@ their work on Programming Puzzlers.
       </p>
       ]]>
    </Details>
+  </Detector>
+  <Detector class="com.h3xstream.findsecbugs.xss.XssJspDetector">
+    <Details>Identify potential Cross-Site Scripting in JSP</Details>
   </Detector>
   <Detector class="edu.umd.cs.findbugs.detect.DuplicateBranches">
     <Details>
@@ -1474,6 +1488,9 @@ factory pattern to create these objects.</p>
       ]]>
    </Details>
   </Detector>
+  <Detector class="com.h3xstream.findsecbugs.csrf.SpringCsrfProtectionDisabledDetector">
+    <Details>Detect the disabling of Spring CSRF protection</Details>
+  </Detector>
   <Detector class="edu.umd.cs.findbugs.detect.QuestionableBooleanAssignment">
     <Details>
       <![CDATA[
@@ -1530,6 +1547,22 @@ factory pattern to create these objects.</p>
       ]]>
    </Details>
   </Detector>
+
+  <Detector class="com.h3xstream.findsecbugs.injection.sql.SqlInjectionDetector">
+    <Details>Identify various kinds of SQL Injection in SQL APIs that accept strings.</Details>
+  </Detector>
+
+  <Detector class="com.h3xstream.findsecbugs.injection.convert.Unrestricted_FileUpload">
+    <Details>Unrestricted_FileUpload design by checkmarx.</Details>
+  </Detector>
+  <Detector class="com.h3xstream.findsecbugs.injection.convert.JSON_HijackingDetector">
+    <Details>JSON_HijackingDetector design by checkmarx.</Details>
+  </Detector>
+
+  <Detector class="com.h3xstream.findsecbugs.injection.convert.Session_FIxationDetector2">
+    <Details>Seesion defined by checkmarx</Details>
+  </Detector>
+
   <Detector class="edu.umd.cs.findbugs.detect.TrainNonNullAnnotations">
     <Details>
       <![CDATA[
@@ -1564,6 +1597,9 @@ factory pattern to create these objects.</p>
     </p>
     ]]>
     </Details>
+  </Detector>
+  <Detector class="com.h3xstream.findsecbugs.xss.XssServletDetector">
+    <Details>Identify potential Cross-Site Scripting in HttpServlet.</Details>
   </Detector>
   <Detector class="edu.umd.cs.findbugs.detect.FindUnrelatedTypesInGenericContainer">
     <Details>
@@ -1940,6 +1976,27 @@ consider using a commercial static analysis or pen-testing tool.
 ]]>
     </Details>
   </BugPattern>
+
+  <BugPattern type="Seesion">
+    <ShortDescription>Seesion vulnerability</ShortDescription>
+    <LongDescription>  0{0},1{1},1class{1.class},2{2},3{3}</LongDescription>
+    <Details>
+      <![CDATA[
+    <p>Seesion...........</p>
+]]>
+    </Details>
+  </BugPattern>
+
+  <BugPattern type="JSON_HIJACKING">
+    <ShortDescription>JSON_HIJACKING vulnerability</ShortDescription>
+    <LongDescription>  0{0},1{1},1class{1.class},2{2},3{3}</LongDescription>
+    <Details>
+      <![CDATA[
+    <p>JSON_HIJACKING...........</p>
+]]>
+    </Details>
+  </BugPattern>
+
   <BugPattern type="SW_SWING_METHODS_INVOKED_IN_SWING_THREAD">
     <ShortDescription>Certain swing methods needs to be invoked in Swing thread</ShortDescription>
     <LongDescription>Call to swing method in {1} needs to be performed in Swing event thread</LongDescription>
@@ -2614,6 +2671,98 @@ to immediately undo the work of the boxing.
 ]]>
     </Details>
   </BugPattern>
+
+  <BugPattern type="XSS_JSP_PRINT">
+    <ShortDescription>Potential XSS in JSP</ShortDescription>
+    <LongDescription>Potential XSS in JSP</LongDescription>
+    <Details>
+      <![CDATA[
+<p>A potential XSS was found. It could be used to execute unwanted JavaScript in a client's browser. (See references)
+</p>
+<p>
+    <b>Vulnerable Code:</b>
+    <pre><%
+String taintedInput = (String) request.getAttribute("input");
+%>
+[...]
+&lt;%= taintedInput %&gt;</pre>
+</p>
+<p>
+    <b>Solution:</b>
+    <pre>
+&lt;%
+String taintedInput = (String) request.getAttribute("input");
+%&gt;
+[...]
+&lt;%= Encode.forHtml(taintedInput) %&gt;
+    </pre>
+</p>
+<p>
+The best defense against XSS is context sensitive output encoding like the example above. There are typically 4 contexts to consider:
+HTML, JavaScript, CSS (styles), and URLs. Please follow the XSS protection rules defined in the OWASP XSS Prevention Cheat Sheet,
+which explains these defenses in significant detail.
+</p>
+<br/>
+<p>
+<b>References</b><br/>
+<a href="http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting">WASC-8: Cross Site Scripting</a><br/>
+<a href="https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet">OWASP: XSS Prevention Cheat Sheet</a><br/>
+<a href="https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_%28XSS%29">OWASP: Top 10 2013-A3: Cross-Site Scripting (XSS)</a><br/>
+<a href="http://cwe.mitre.org/data/definitions/79.html">CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')</a><br/>
+<a href="https://code.google.com/p/owasp-java-encoder/">OWASP Java Encoder</a><br/>
+</p>
+            ]]>
+    </Details>
+  </BugPattern>
+
+
+
+  <!-- XSS in Servlet -->
+  <BugPattern type="XSS_SERVLET">
+    <ShortDescription>Potential XSS in Servlet</ShortDescription>
+    <LongDescription>This use of {3} could be vulnerable to XSS</LongDescription>
+    <Details>
+      <![CDATA[
+<p>
+A potential XSS was found. It could be used to execute unwanted JavaScript in a client's browser. (See references)
+</p>
+<p>
+    <b>Vulnerable Code:</b>
+<pre>protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    String input1 = req.getParameter("input1");
+    [...]
+    resp.getWriter().write(input1);
+}</pre>
+</p>
+<p>
+    <b>Solution:</b>
+<pre>protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    String input1 = req.getParameter("input1");
+    [...]
+    resp.getWriter().write(Encode.forHtml(input1));
+}</pre>
+</p>
+<p>
+The best defense against XSS is context sensitive output encoding like the example above. There are typically 4 contexts to consider:
+HTML, JavaScript, CSS (styles), and URLs. Please follow the XSS protection rules defined in the OWASP XSS Prevention Cheat Sheet,
+which explains these defenses in significant detail.
+</p>
+<p>Note that this XSS in Servlet rule looks for similar issues, but looks for them in a different way than the existing
+'XSS: Servlet reflected cross site scripting vulnerability' and 'XSS: Servlet reflected cross site scripting vulnerability in error page' rules in FindBugs.
+</p>
+<br/>
+<p>
+<b>References</b><br/>
+<a href="http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting">WASC-8: Cross Site Scripting</a><br/>
+<a href="https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet">OWASP: XSS Prevention Cheat Sheet</a><br/>
+<a href="https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_%28XSS%29">OWASP: Top 10 2013-A3: Cross-Site Scripting (XSS)</a><br/>
+<a href="http://cwe.mitre.org/data/definitions/79.html">CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')</a><br/>
+<a href="https://code.google.com/p/owasp-java-encoder/">OWASP Java Encoder</a><br/>
+</p>
+            ]]>
+    </Details>
+  </BugPattern>
+
   <BugPattern type="DM_BOXED_PRIMITIVE_TOSTRING">
     <ShortDescription>Method allocates a boxed primitive just to call toString</ShortDescription>
     <LongDescription>Primitive boxed just to call toString in {1}</LongDescription>
@@ -3165,6 +3314,46 @@ equal objects have equal hashCodes.
 ]]>
     </Details>
   </BugPattern>
+
+  <BugPattern type="SQL_INJECTION_JDBC">
+    <ShortDescription>Potential JDBC Injection</ShortDescription>
+    <LongDescription>This use of {3} can be vulnerable to SQL injection.</LongDescription>
+    <Details>
+      <![CDATA[
+<p>
+The input values included in SQL queries need to be passed in safely.
+Bind variables in prepared statements can be used to easily mitigate the risk of SQL injection.
+</p>
+
+<p>
+    <b>Vulnerable Code:</b><br/>
+    <pre>Connection conn = [...];
+Statement stmt = con.createStatement();
+ResultSet rs = stmt.executeQuery("update COFFEES set SALES = "+nbSales+" where COF_NAME = '"+coffeeName+"'");</pre>
+</p>
+<p>
+    <b>Solution:</b><br/>
+    <pre>Connection conn = [...];
+conn.prepareStatement("update COFFEES set SALES = ? where COF_NAME = ?");
+updateSales.setInt(1, nbSales);
+updateSales.setString(2, coffeeName);</pre>
+</p>
+<br/>
+
+<b>References (JDBC)</b><br/>
+<a href="http://docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html">Oracle Documentation: The Java Tutorials &gt; Prepared Statements</a><br/>
+<b>References (SQL injection)</b><br/>
+<a href="http://projects.webappsec.org/w/page/13246963/SQL%20Injection">WASC-19: SQL Injection</a><br/>
+<a href="http://capec.mitre.org/data/definitions/66.html">CAPEC-66: SQL Injection</a><br/>
+<a href="http://cwe.mitre.org/data/definitions/89.html">CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')</a><br/>
+<a href="https://www.owasp.org/index.php/Top_10_2013-A1-Injection">OWASP: Top 10 2013-A1-Injection</a><br/>
+<a href="https://www.owasp.org/index.php/SQL_Injection_Prevention_Cheat_Sheet">OWASP: SQL Injection Prevention Cheat Sheet</a><br/>
+<a href="https://www.owasp.org/index.php/Query_Parameterization_Cheat_Sheet">OWASP: Query Parameterization Cheat Sheet</a><br/>
+</p>
+]]>
+    </Details>
+  </BugPattern>
+
   <BugPattern type="HE_USE_OF_UNHASHABLE_CLASS">
     <ShortDescription>Use of class without a hashCode() method in a hashed data structure</ShortDescription>
     <LongDescription>{2} doesn't define a hashCode() method but is used in a hashed data structure in {1}</LongDescription>
@@ -4057,6 +4246,17 @@ opportunities to accidentally define methods that do not override methods in the
 ]]>
     </Details>
   </BugPattern>
+  <BugPattern type="Unrestricted_FileUpload">
+    <ShortDescription>Unrestricted_FileUpload </ShortDescription>
+    <LongDescription>The class name{0},{1},{2},{3}Unrestricted_FileUpload</LongDescription>
+    <Details>
+      <![CDATA[
+  <p> Unrestricted_FileUpload
+</p>
+]]>
+    </Details>
+  </BugPattern>
+
   <BugPattern type="NM_SAME_SIMPLE_NAME_AS_INTERFACE">
     <ShortDescription>Class names shouldn't shadow simple name of implemented interface</ShortDescription>
     <LongDescription>The class name {0} shadows the simple name of implemented interface {1}</LongDescription>
@@ -4343,6 +4543,55 @@ deserialized instance of the class.
 ]]>
     </Details>
   </BugPattern>
+  <BugPattern type="COMMAND_INJECTION">
+    <ShortDescription>Potential Command Injection</ShortDescription>
+    <LongDescription>This usage of {3} can be vulnerable to Command Injection</LongDescription>
+    <Details>
+      <![CDATA[
+<p>The highlighted API is used to execute a system command. If unfiltered input is passed to this API, it can lead to arbitrary command execution.</p>
+<br/>
+<p>
+    <b>Vulnerable Code:</b><br/>
+<pre>import java.lang.Runtime;
+
+Runtime r = Runtime.getRuntime();
+r.exec("/bin/sh -c some_tool" + input);</pre>
+</p>
+<p>
+<b>References</b><br/>
+<a href="https://www.owasp.org/index.php/Command_Injection">OWASP: Command Injection</a><br/>
+<a href="https://www.owasp.org/index.php/Top_10_2013-A1-Injection">OWASP: Top 10 2013-A1-Injection</a><br/>
+<a href="http://cwe.mitre.org/data/definitions/78.html">CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')</a>
+</p>
+]]>
+    </Details>
+  </BugPattern>
+
+
+  <BugPattern type="SCALA_COMMAND_INJECTION">
+    <ShortDescription>Potential Command Injection (Scala)</ShortDescription>
+    <LongDescription>The command execution could be vulnerable to injection</LongDescription>
+    <Details>
+      <![CDATA[
+<p>The highlighted API is used to execute a system command. If unfiltered input is passed to this API, it can lead to arbitrary command execution.</p>
+<br/>
+<p>
+    <b>Vulnerable Code:</b><br/>
+<pre>def executeCommand(value:String) = Action {
+    val result = value.!
+    Ok("Result:\n"+result)
+}</pre>
+</p>
+<p>
+<b>References</b><br/>
+<a href="https://www.owasp.org/index.php/Command_Injection">OWASP: Command Injection</a><br/>
+<a href="https://www.owasp.org/index.php/Top_10_2013-A1-Injection">OWASP: Top 10 2013-A1-Injection</a><br/>
+<a href="http://cwe.mitre.org/data/definitions/78.html">CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')</a>
+</p>
+]]>
+    </Details>
+  </BugPattern>
+
   <BugPattern type="SE_METHOD_MUST_BE_PRIVATE">
     <ShortDescription>Method must be private in order for serialization to work</ShortDescription>
     <LongDescription>The method {1.givenClass} must be private to be invoked in serialization/deserialization of {0}</LongDescription>
@@ -4832,6 +5081,35 @@ inner object.&nbsp; This reference makes the instances
 ]]>
     </Details>
   </BugPattern>
+  <BugPattern type="SPRING_CSRF_PROTECTION_DISABLED">
+    <ShortDescription>Spring CSRF protection disabled</ShortDescription>
+    <LongDescription>Disabling Spring Security's CSRF protection is unsafe for standard web applications</LongDescription>
+    <Details>
+      <![CDATA[
+<p>Disabling Spring Security's CSRF protection is unsafe for standard web applications.</p>
+<p>A valid use case for disabling this protection would be a service exposing state-changing operations
+that is guaranteed to be used only by non-browser clients.</p>
+<p>
+    <b>Insecure configuration:</b><br/>
+<pre>@EnableWebSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
+    }
+}</pre>
+</p>
+<p>
+<b>References</b><br/>
+<a href="https://docs.spring.io/spring-security/site/docs/current/reference/html/csrf.html#when-to-use-csrf-protection">Spring Security Official Documentation: When to use CSRF protection</a><br/>
+<a href="https://www.owasp.org/index.php/Cross-Site_Request_Forgery_%28CSRF%29">OWASP: Cross-Site Request Forgery</a><br/>
+<a href="https://www.owasp.org/index.php/Cross-Site_Request_Forgery_%28CSRF%29_Prevention_Cheat_Sheet">OWASP: CSRF Prevention Cheat Sheet</a><br/>
+<a href="https://cwe.mitre.org/data/definitions/352.html">CWE-352: Cross-Site Request Forgery (CSRF)</a>
+</p>
+]]>
+    </Details>
+  </BugPattern>
   <BugPattern type="WA_NOT_IN_LOOP">
     <ShortDescription>Wait not in loop </ShortDescription>
     <LongDescription>Wait not in loop in {1}</LongDescription>
@@ -4903,6 +5181,88 @@ Probably something else was meant or the condition can be removed.</p>
 <![CDATA[
 <p>This condition always produces the same result due to the type range of the involved variable.
 Probably something else was meant or the condition can be removed.</p>
+]]>
+    </Details>
+  </BugPattern>
+
+  <BugPattern type="SPRING_CSRF_UNRESTRICTED_REQUEST_MAPPING">
+    <ShortDescription>Spring CSRF unrestricted RequestMapping</ShortDescription>
+    <LongDescription>Unrestricted Spring's RequestMapping makes the method vulnerable to CSRF attacks</LongDescription>
+    <Details>
+      <![CDATA[
+<p>Methods annotated with <code>RequestMapping</code> are by default mapped to all the HTTP request methods.
+However, Spring Security's CSRF protection is not enabled by default
+for the HTTP request methods <code>GET</code>, <code>HEAD</code>, <code>TRACE</code>, and <code>OPTIONS</code>
+(as this could cause the tokens to be leaked).
+Therefore, state-changing methods annotated with <code>RequestMapping</code> and not narrowing the mapping
+to the HTTP request methods <code>POST</code>, <code>PUT</code>, <code>DELETE</code>, or <code>PATCH</code>
+are vulnerable to CSRF attacks.</p>
+<p>
+    <b>Vulnerable Code:</b><br/>
+<pre>@Controller
+public class UnsafeController {
+
+    @RequestMapping("/path")
+    public void writeData() {
+        // State-changing operations performed within this method.
+    }
+}</pre>
+</p>
+<p>
+    <b>Solution (Spring Framework 4.3 and later):</b><br/>
+<pre>@Controller
+public class SafeController {
+
+    /**
+     * For methods without side-effects use @GetMapping.
+     */
+    @GetMapping("/path")
+    public String readData() {
+        // No state-changing operations performed within this method.
+        return "";
+    }
+
+    /**
+     * For state-changing methods use either @PostMapping, @PutMapping, @DeleteMapping, or @PatchMapping.
+     */
+    @PostMapping("/path")
+    public void writeData() {
+        // State-changing operations performed within this method.
+    }
+}</pre>
+</p>
+<p>
+    <b>Solution (Before Spring Framework 4.3):</b><br/>
+<pre>@Controller
+public class SafeController {
+
+    /**
+     * For methods without side-effects use either
+     * RequestMethod.GET, RequestMethod.HEAD, RequestMethod.TRACE, or RequestMethod.OPTIONS.
+     */
+    @RequestMapping(value = "/path", method = RequestMethod.GET)
+    public String readData() {
+        // No state-changing operations performed within this method.
+        return "";
+    }
+
+    /**
+     * For state-changing methods use either
+     * RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, or RequestMethod.PATCH.
+     */
+    @RequestMapping(value = "/path", method = RequestMethod.POST)
+    public void writeData() {
+        // State-changing operations performed within this method.
+    }
+}</pre>
+</p>
+<p>
+<b>References</b><br/>
+<a href="https://docs.spring.io/spring-security/site/docs/current/reference/html/csrf.html#csrf-use-proper-verbs">Spring Security Official Documentation: Use proper HTTP verbs (CSRF protection)</a><br/>
+<a href="https://www.owasp.org/index.php/Cross-Site_Request_Forgery_%28CSRF%29">OWASP: Cross-Site Request Forgery</a><br/>
+<a href="https://www.owasp.org/index.php/Cross-Site_Request_Forgery_%28CSRF%29_Prevention_Cheat_Sheet">OWASP: CSRF Prevention Cheat Sheet</a><br/>
+<a href="https://cwe.mitre.org/data/definitions/352.html">CWE-352: Cross-Site Request Forgery (CSRF)</a>
+</p>
 ]]>
     </Details>
   </BugPattern>
@@ -5175,6 +5535,48 @@ the null pointer exception can't ever be executed; deciding that is beyond the a
 ]]>
     </Details>
   </BugPattern>
+  <BugPattern type="XSS_REQUEST_WRAPPER">
+    <ShortDescription>XSSRequestWrapper is a weak XSS protection</ShortDescription>
+    <LongDescription>XSSRequestWrapper is a weak XSS protection mechanism</LongDescription>
+    <Details>
+      <![CDATA[
+<p>
+An implementation of <code>HttpServletRequestWrapper</code> called <code>XSSRequestWrapper</code> was published through
+various blog sites. <sup><a href="http://java.dzone.com/articles/stronger-anti-cross-site">[1]</a></sup>
+<sup><a href="http://www.javacodegeeks.com/2012/07/anti-cross-site-scripting-xss-filter.html">[2]</a></sup>
+</p>
+<p>
+The filtering is weak for a few reasons:
+<ul>
+<li>It covers only parameters not headers and side-channel inputs</li>
+<li>The replace chain can be bypassed easily (see example below)</li>
+<li>It's a black list of very specific bad patterns (rather than a white list of good/valid input)</li>
+</ul>
+</p>
+<p>
+<b>Example of bypass:</b><br/>
+</p>
+<pre>&lt;scrivbscript:pt&gt;alert(1)&lt;/scrivbscript:pt&gt;</pre>
+<p>
+The previous input will be transformed into <b><code>"&lt;script&gt;alert(1)&lt;/script&gt;"</code></b>.
+The removal of <code>"vbscript:"</code> is after the replacement of <code>"&lt;script&gt;.*&lt;/script&gt;"</code>.
+</p>
+<p>
+For stronger protection, choose a solution that encodes characters automatically in the <b><u>view</u></b> (template, jsp, ...) following
+the XSS protection rules defined in the OWASP XSS Prevention Cheat Sheet.
+</p>
+<br/>
+<p>
+<b>References</b><br/>
+<a href="http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting">WASC-8: Cross Site Scripting</a><br/>
+<a href="https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet">OWASP: XSS Prevention Cheat Sheet</a><br/>
+<a href="https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_%28XSS%29">OWASP: Top 10 2013-A3: Cross-Site Scripting (XSS)</a><br/>
+<a href="http://cwe.mitre.org/data/definitions/79.html">CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')</a>
+</p>
+]]>
+    </Details>
+  </BugPattern>
+
   <BugPattern type="NP_NULL_ON_SOME_PATH_MIGHT_BE_INFEASIBLE">
     <ShortDescription>Possible null pointer dereference on branch that might be infeasible</ShortDescription>
     <LongDescription>Possible null pointer dereference of {2.givenClass} on branch that might be infeasible in {1}</LongDescription>
@@ -6326,6 +6728,42 @@ for (int i = 0; i &lt; field.length; ++i) {
 }
 String s = buf.toString();
 </code></pre>
+]]>
+    </Details>
+  </BugPattern>
+  <BugPattern type="SQL_INJECTION_SPRING_JDBC">
+    <ShortDescription>Potential JDBC Injection (Spring JDBC)</ShortDescription>
+    <LongDescription>This use of {3} can be vulnerable to SQL injection</LongDescription>
+    <Details>
+      <![CDATA[
+<p>
+The input values included in SQL queries need to be passed in safely.
+Bind variables in prepared statements can be used to easily mitigate the risk of SQL injection.
+</p>
+
+<p>
+    <b>Vulnerable Code:</b><br/>
+    <pre>JdbcTemplate jdbc = new JdbcTemplate();
+int count = jdbc.queryForObject("select count(*) from Users where name = '"+paramName+"'", Integer.class);
+</pre>
+</p>
+<p>
+    <b>Solution:</b><br/>
+    <pre>JdbcTemplate jdbc = new JdbcTemplate();
+int count = jdbc.queryForObject("select count(*) from Users where name = ?", Integer.class, paramName);</pre>
+</p>
+<br/>
+
+<b>References (Spring JDBC)</b><br/>
+<a href="http://docs.spring.io/spring-framework/docs/current/spring-framework-reference/html/jdbc.html">Spring Official Documentation: Data access with JDBC</a><br/>
+<b>References (SQL injection)</b><br/>
+<a href="http://projects.webappsec.org/w/page/13246963/SQL%20Injection">WASC-19: SQL Injection</a><br/>
+<a href="http://capec.mitre.org/data/definitions/66.html">CAPEC-66: SQL Injection</a><br/>
+<a href="http://cwe.mitre.org/data/definitions/89.html">CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')</a><br/>
+<a href="https://www.owasp.org/index.php/Top_10_2013-A1-Injection">OWASP: Top 10 2013-A1-Injection</a><br/>
+<a href="https://www.owasp.org/index.php/SQL_Injection_Prevention_Cheat_Sheet">OWASP: SQL Injection Prevention Cheat Sheet</a><br/>
+<a href="https://www.owasp.org/index.php/Query_Parameterization_Cheat_Sheet">OWASP: Query Parameterization Cheat Sheet</a><br/>
+</p>
 ]]>
     </Details>
   </BugPattern>
@@ -8493,4 +8931,16 @@ after the call to initLogging, the logger configuration is lost
   <BugCode abbrev="OBL">Unsatisfied obligation to clean up stream or resource</BugCode>
   <BugCode abbrev="FB">SpotBugs did not produce the expected warnings on a method</BugCode>
   <BugCode abbrev="DL">Unintended contention or possible deadlock due to locking on shared objects</BugCode>
+  <BugCode abbrev="SECXSS2">Potential XSS in Servlet</BugCode>
+  <BugCode abbrev="SECXSS1">Potential XSS in JSP</BugCode>
+  <BugCode abbrev="SECSQLIJDBC">SQL Injection (JDBC)</BugCode>
+  <BugCode abbrev="SECSQLISPRJDBC">SQL Injection (Spring JDBC)</BugCode>
+  <BugCode abbrev="SECSPRCSRFPD">Spring CSRF Protection Disabled</BugCode>
+  <BugCode abbrev="SECSPRCSRFURM">Spring CSRF Unrestricted RequestMapping</BugCode>
+  <BugCode abbrev="SECXRW">XSSRequestWrapper (weak XSS protection)</BugCode>
+  <BugCode abbrev="SECCI">Command Injection</BugCode>
+  <BugCode abbrev="SECSCI">Command Injection (Scala)</BugCode>
+  <BugCode abbrev="Seesion">Seesion</BugCode>
+  <BugCode abbrev="Unrestricted_FileUpload">Unrestricted_FileUpload</BugCode>
+  <BugCode abbrev="JSON_HijackingDetector">JSON_HijackingDetector</BugCode>
 </MessageCollection>

@@ -55,6 +55,10 @@ public class TypeQualifierResolver {
 
     static final ClassDescriptor androidNonNull = DescriptorFactory.createClassDescriptor("android/support/annotation/NonNull");
 
+    static final ClassDescriptor androidxNullable = DescriptorFactory.createClassDescriptor("androidx/annotation/Nullable");
+
+    static final ClassDescriptor androidxNonNull = DescriptorFactory.createClassDescriptor("androidx/annotation/NonNull");
+
     static final ClassDescriptor googleNullable = DescriptorFactory.createClassDescriptor("com/google/common/base/Nullable");
 
     static final ClassDescriptor intellijNullable = DescriptorFactory.createClassDescriptor("org/jetbrains/annotations/Nullable");
@@ -68,6 +72,10 @@ public class TypeQualifierResolver {
     static final ClassDescriptor checkerFrameworkNullable = DescriptorFactory.createClassDescriptor("org/checkerframework/checker/nullness/qual/Nullable");
 
     static final ClassDescriptor checkerFrameworkNullableDecl = DescriptorFactory.createClassDescriptor("org/checkerframework/checker/nullness/compatqual/NullableDecl");
+
+    static final ClassDescriptor checkerFrameworkNonNull = DescriptorFactory.createClassDescriptor("org/checkerframework/checker/nullness/qual/NonNull");
+
+    static final ClassDescriptor checkerFrameworkNonNullDecl = DescriptorFactory.createClassDescriptor("org/checkerframework/checker/nullness/compatqual/NonNullDecl");
 
     // javax.annotations.ParametersAreNonnullByDefault ?
     static final ClassDescriptor eclipseNonNullByDefault = DescriptorFactory.createClassDescriptor("org/eclipse/jdt/annotation/NonNullByDefault");
@@ -133,6 +141,7 @@ public class TypeQualifierResolver {
 
             try {
                 if (annotationClass.equals(androidNullable)
+                        || annotationClass.equals(androidxNullable)
                         || annotationClass.equals(googleNullable)
                         || annotationClass.equals(eclipseNullable)
                         || annotationClass.equals(intellijNullable)
@@ -142,9 +151,12 @@ public class TypeQualifierResolver {
                     return;
                 }
                 if (annotationClass.equals(androidNonNull)
+                        || annotationClass.equals(androidxNonNull)
                         || annotationClass.equals(eclipseNonNull)
                         || annotationClass.equals(eclipseNonNullByDefault)
-                        || annotationClass.equals(intellijNotNull)) {
+                        || annotationClass.equals(intellijNotNull)
+                        || annotationClass.equals(checkerFrameworkNonNull)
+                        || annotationClass.equals(checkerFrameworkNonNullDecl)) {
                     resolveTypeQualifierNicknames(new AnnotationValue(JSR305NullnessAnnotations.NONNULL), result, onStack);
                     return;
                 }

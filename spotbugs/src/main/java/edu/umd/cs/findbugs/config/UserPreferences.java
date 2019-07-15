@@ -175,21 +175,11 @@ public class UserPreferences implements Cloneable {
      * @throws IOException
      */
     public void read(@WillClose InputStream in) throws IOException {
-        BufferedInputStream prefStream = null;
         Properties props = new Properties();
-        try {
-            prefStream = new BufferedInputStream(in);
+        try (BufferedInputStream prefStream = new BufferedInputStream(in)) {
             props.load(prefStream);
-        } finally {
-            try {
-                if (prefStream != null) {
-                    prefStream.close();
-                }
-            } catch (IOException ioe) {
-                // Ignore
-            }
         }
-
+    
         if (props.size() == 0) {
             return;
         }
@@ -294,10 +284,8 @@ public class UserPreferences implements Cloneable {
             String key = "recent" + i;
             props.put(key, projectName);
         }
-
-        Iterator<Entry<String, Boolean>> it = detectorEnablementMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, Boolean> entry = it.next();
+    
+        for (Entry<String, Boolean> entry : detectorEnablementMap.entrySet()) {
             props.put("detector" + entry.getKey(), entry.getKey() + BOOL_SEPARATOR + String.valueOf(entry.getValue().booleanValue()));
         }
 
@@ -315,19 +303,10 @@ public class UserPreferences implements Cloneable {
         writeProperties(props, KEY_EXCLUDE_FILTER, excludeFilterFiles);
         writeProperties(props, KEY_EXCLUDE_BUGS, excludeBugsFiles);
         writeProperties(props, KEY_PLUGIN, customPlugins);
-
-        OutputStream prefStream = null;
-        try {
-            prefStream = new BufferedOutputStream(out);
+    
+        try (OutputStream prefStream = new BufferedOutputStream(out)) {
             props.store(prefStream, "SpotBugs User Preferences");
             prefStream.flush();
-        } finally {
-            try {
-                if (prefStream != null) {
-                    prefStream.close();
-                }
-            } catch (IOException ioe) {
-            }
         }
     }
 
@@ -364,14 +343,9 @@ public class UserPreferences implements Cloneable {
     public void removeProject(String projectName) {
         // It should only be in list once (usually in slot 0) but check entire
         // list...
-        Iterator<String> it = recentProjectsList.iterator();
-        while (it.hasNext()) {
-            // LinkedList, so remove() via iterator is faster than
-            // remove(index).
-            if (projectName.equals(it.next())) {
-                it.remove();
-            }
-        }
+        // LinkedList, so remove() via iterator is faster than
+        // remove(index).
+        recentProjectsList.removeIf(projectName::equals);
     }
 
     /**
@@ -396,15 +370,10 @@ public class UserPreferences implements Cloneable {
      */
     public boolean isDetectorEnabled(DetectorFactory factory) {
         String detectorName = factory.getShortName();
-        Boolean enabled = detectorEnablementMap.get(detectorName);
-        if (enabled == null) {
-            // No explicit preference has been specified for this detector,
-            // so use the default enablement specified by the
-            // DetectorFactory.
-            enabled = factory.isDefaultEnabled();
-            detectorEnablementMap.put(detectorName, enabled);
-        }
-        return enabled;
+        // No explicit preference has been specified for this detector,
+        // so use the default enablement specified by the
+        // DetectorFactory.
+        return detectorEnablementMap.computeIfAbsent(detectorName, k -> factory.isDefaultEnabled());
     }
 
     /**

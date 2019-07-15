@@ -74,6 +74,10 @@ public class FindFieldSelfAssignment extends OpcodeStackDetector implements Stat
         if (DEBUG) {
             System.out.printf("%5d %12s %s%n", getPC(), Const.getOpcodeName(seen),stack);
         }
+        String l = Const.getOpcodeName(seen);
+//        String n  = Const.getMethodHandleName(seen);
+        String m = getMethodName();
+
         if (seen == Const.PUTFIELD) {
             OpcodeStack.Item top = stack.getStackItem(0);
             OpcodeStack.Item next = stack.getStackItem(1);

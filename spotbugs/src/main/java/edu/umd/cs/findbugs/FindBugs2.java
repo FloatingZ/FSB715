@@ -36,6 +36,8 @@ import java.util.Set;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
+import com.h3xstream.findsecbugs.TransferParamFieldReturn.MyselfConfig;
+import com.h3xstream.findsecbugs.TransferParamFieldReturn.ScanInfo;
 import org.apache.bcel.classfile.ClassFormatException;
 import org.dom4j.DocumentException;
 
@@ -607,6 +609,7 @@ public class FindBugs2 implements IFindBugsEngine, AutoCloseable {
         new edu.umd.cs.findbugs.classfile.engine.EngineRegistrar().registerAnalysisEngines(analysisCache);
         new edu.umd.cs.findbugs.classfile.engine.asm.EngineRegistrar().registerAnalysisEngines(analysisCache);
         new edu.umd.cs.findbugs.classfile.engine.bcel.EngineRegistrar().registerAnalysisEngines(analysisCache);
+        new com.h3xstream.findsecbugs.taintanalysis.EngineRegistrar().registerAnalysisEngines(analysisCache);
     }
 
     /**
@@ -620,7 +623,7 @@ public class FindBugs2 implements IFindBugsEngine, AutoCloseable {
      * @throws IOException
      */
     public static void registerPluginAnalysisEngines(DetectorFactoryCollection detectorFactoryCollection,
-            IAnalysisCache analysisCache) throws IOException {
+                                                     IAnalysisCache analysisCache) throws IOException {
         for (Iterator<Plugin> i = detectorFactoryCollection.pluginIterator(); i.hasNext();) {
             Plugin plugin = i.next();
 
@@ -853,7 +856,7 @@ public class FindBugs2 implements IFindBugsEngine, AutoCloseable {
      *            name of source info file (null if none)
      */
     public static void createAnalysisContext(Project project, List<ClassDescriptor> appClassList,
-            @CheckForNull String sourceInfoFileName) throws  IOException {
+                                             @CheckForNull String sourceInfoFileName) throws  IOException {
         AnalysisContext analysisContext = new AnalysisContext(project);
 
         // Make this the current analysis context
@@ -982,7 +985,9 @@ public class FindBugs2 implements IFindBugsEngine, AutoCloseable {
 
             long startTime = System.currentTimeMillis();
             bugReporter.getProjectStats().setReferencedClasses(referencedClassSet.size());
+            int tag = 0;
             for (Iterator<AnalysisPass> passIterator = executionPlan.passIterator(); passIterator.hasNext();) {
+                tag++;
                 AnalysisPass pass = passIterator.next();
                 // The first pass is generally a non-reporting pass which
                 // gathers information about referenced classes.
@@ -1031,6 +1036,24 @@ public class FindBugs2 implements IFindBugsEngine, AutoCloseable {
                 int count = 0;
                 Global.getAnalysisCache().purgeAllMethodAnalysis();
                 Global.getAnalysisCache().purgeClassAnalysis(FBClassReader.class);
+
+                try{
+                for(ClassDescriptor cd:classCollection){
+                    MyselfConfig.getMyselfConfig().visit(cd);
+                }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+//                try{
+//                    for(ClassDescriptor cd:classCollection){
+////                        ScanInfo.scanSwitch = 0;
+//                        ScanInfo.getInstance().visit(cd);
+////                        ScanInfo.scanSwitch = 1;
+//                    }
+//
+//                }catch (Exception e){
+//                        e.printStackTrace();
+//                }
                 for (ClassDescriptor classDescriptor : classCollection) {
                     long classStartNanoTime = 0;
                     if (PROGRESS) {
@@ -1054,7 +1077,7 @@ public class FindBugs2 implements IFindBugsEngine, AutoCloseable {
                     boolean isHuge = currentAnalysisContext.isTooBig(classDescriptor);
                     if (isHuge && currentAnalysisContext.isApplicationClass(classDescriptor)) {
                         bugReporter.reportBug(new BugInstance("SKIPPED_CLASS_TOO_BIG", Priorities.NORMAL_PRIORITY)
-                        .addClass(classDescriptor));
+                                .addClass(classDescriptor));
                     }
                     currentClassName = ClassName.toDottedClassName(classDescriptor.getClassName());
                     notifyClassObservers(classDescriptor);

@@ -26,6 +26,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.h3xstream.findsecbugs.taintanalysis.Taint;
 import org.apache.bcel.Const;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.Instruction;
@@ -124,6 +125,9 @@ public abstract class Frame<ValueType> {
         return isTop;
     }
 
+    public ArrayList<ValueType> getSlotList(){
+        return slotList;
+    }
     /**
      * Make this frame the special "TOP" value. Such Frames are the identity
      * element of the meet operation.
